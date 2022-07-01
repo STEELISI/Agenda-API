@@ -2,14 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = 3000;
+const makeDir = require('make-dir');
+const nliPath = process.env.NLI_PATH + '';
+const nluPath = process.env.NLU_PATH + '';
 
-function createTrainingFiles(triggers){
+async function doCreateTrainingFiles(triggers){
 // in NLI_PATH folder, create $t.txt
 // in NLU_PATH folder, create $t.txt, NOT$t.txt
   console.log(triggers);
-  console.log(process.env.NLI_PATH);
-  console.log(process.env.NLU_PATH);
+
+  console.log(nliPath);
+  console.log(nluPath);
+
+  await makeDir(nliPath);
+  await makeDir(nluPath);
 }
+
+function createTrainingFiles(t){
+  doCreateTrainingFiles(t).then((result) => {});
+}
+
 
 app.get('/', (req, res) => {
   res.send('Agenda-Express API Running.');
