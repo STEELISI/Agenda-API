@@ -54,7 +54,7 @@ fs.stat(sslCert, function(err, stat) {
   if (err == null) {
     const httpsServer = https.createServer({
       key: fs.readFileSync(sslKey),
-      cert: fs.readFileSync(ssCert),
+      cert: fs.readFileSync(sslCert),
     }, app);
     httpsServer.listen(sslPort, () => { console.log('HTTPS Server on port ' + sslPort); });
   }
