@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const https = require('https');
+const fs = require('fs');
 const app = express();
 const makeDir = require('make-dir');
 const path = require('node:path');
@@ -8,12 +10,12 @@ const touch = require('touch');
 const nliPath = process.env.NLI_PATH + '';
 const nluPath = process.env.NLU_PATH + '';
 const port = Number(process.env.PORT);
+const sslPort = Number(process.env.SSL_PORT);
+const sslKey = process.env.SSL_KEY + '';
+const sslCert = process.env.SSL_CERT + '';
 
 async function doCreateTrainingFiles(triggers){
-// in NLI_PATH folder, create $t.txt
-// in NLU_PATH folder, create $t.txt, NOT$t.txt
   console.log(triggers);
-
   console.log(nliPath);
   console.log(nluPath);
 
@@ -46,4 +48,14 @@ app.post('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
+});
+
+fs.stat(sslCert, function(err, stat) {
+  if (err == null) {
+    const httpsServer = https.createServer({
+      key: fs.readFileSync(sslKey),
+      cert: fs.readFileSync(ssCert),
+    }, app);
+    httpsServer.listen(sslPort, () => { console.log('HTTPS Server on port ' + sslPort); });
+  }
 });
