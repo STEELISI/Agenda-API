@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const makeDir = require('make-dir');
 const path = require('node:path');
@@ -29,6 +30,8 @@ async function doCreateTrainingFiles(triggers){
 function createTrainingFiles(t){
   doCreateTrainingFiles(t).then((result) => {});
 }
+
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Agenda-Express API Running.');
