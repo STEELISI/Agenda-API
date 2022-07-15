@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
+const yaml = require('yaml');
 const app = express();
 const makeDir = require('make-dir');
 const path = require('node:path');
@@ -15,26 +16,58 @@ const sslPort = Number(process.env.SSL_PORT);
 const sslKey = process.env.SSL_KEY + '';
 const sslCert = process.env.SSL_CERT + '';
 
-async function doCreateTrainingFiles(triggers){
-  console.log(triggers);
-  console.log(nliPath);
-  console.log(nluPath);
-  console.log(agendaPath);
+async function doCreateTrainingFiles(triggers, training, agenda){
+  console.log('Creating Training Files...');
+  console.log(agenda['name'] + ':' + triggers);
+  console.log('NLI Path: ' + nliPath);
+  console.log('NLU Path: ' + nluPath);
+  console.log('Agenda Path: ' + agendaPath);
 
   await makeDir(nliPath);
   await makeDir(nluPath);
   await makeDir(agendaPath);
 
+  let agendaYaml = yaml.stringify(agenda);
+  let agendaFile = path.join(agendaPath, agenda['name'] + '.yaml');
+  writeFile(agendaFile, agendaYaml);
+
   for (let t in triggers) {
     let tName = triggers[t];
-    touch.sync(path.join(nliPath, tName + '.txt'));
-    touch.sync(path.join(nluPath, tName + '.txt'));
-    touch.sync(path.join(nluPath, 'NOT' + tName + '.txt'));
+    let nli = training[tName + '_nli'] + '';
+    let nlu = training[tName + '_nlu'] + '';
+    let nluNot = training[tName + '_nlu_not'] + '';
+
+    let nliFile = path.join(nliPath, tName + '.txt');
+    touch.sync(nliFile);
+    if (nli) {
+      writeFile(nliFile, nli);
+    }
+
+    let nluTriggerPath = path.join(nluPath, tName);
+    await makeDir(nluTriggerPath);
+
+    let nluFile = path.join(nluTriggerPath, tName + '.txt');
+    touch.sync(nluFile);
+    if (nlu) {
+      writeFile(nluFile, nlu);
+    }
+
+    let nluNotFile = path.join(nluTriggerPath, 'NOT' + tName + '.txt')
+    touch.sync(nluNotFile);
+    if (nluNot) {
+      writeFile(nluNotFile, nluNot);
+    }
   }
 }
 
-function createTrainingFiles(t){
-  doCreateTrainingFiles(t).then((result) => {});
+function writeFile(filename, data){
+  fs.writeFile(filename, data, (err) => {
+    if (err) throw err;
+  })
+}
+
+function createTrainingFiles(t, training, agenda){
+  doCreateTrainingFiles(t, training, agenda).then((result) => {});
 }
 
 app.use(cors());
@@ -44,16 +77,10 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', (req, res) => {
-  const triggers=req.header('TRIGGERS');
-  console.log('TRIGGERS: ' + triggers);
-  createTrainingFiles(triggers.split(','));
-
-  const training=req.header('TRAINING');
-  console.log('TRAINING: ' + training);
-  
-  const agenda=req.header('AGENDA');
-  console.log('AGENDA: ' + agenda);
-
+  const triggers = req.header('TRIGGERS').split(',');
+  const training = JSON.parse(req.header('TRAINING'));
+  const agenda = JSON.parse(req.header('AGENDA'));
+  createTrainingFiles(triggers, training, agenda);
   res.end('{"result":"SUCCESS"}');
 });
 
