@@ -19,9 +19,6 @@ const sslCert = process.env.SSL_CERT + '';
 async function doCreateTrainingFiles(triggers, training, agenda){
   console.log('Creating Training Files...');
   console.log(agenda['name'] + ':' + triggers);
-  console.log('NLI Path: ' + nliPath);
-  console.log('NLU Path: ' + nluPath);
-  console.log('Agenda Path: ' + agendaPath);
 
   await makeDir(nliPath);
   await makeDir(nluPath);
@@ -86,6 +83,10 @@ app.post('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);
+  console.log('NLI Path: ' + nliPath);
+  console.log('NLU Path: ' + nluPath);
+  console.log('Agenda Path: ' + agendaPath);
+  console.log('SSL Port: ' + sslPort);
 });
 
 fs.stat(sslCert, function(err, stat) {
