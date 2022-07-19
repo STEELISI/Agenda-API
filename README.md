@@ -15,7 +15,19 @@ $ npm --version
 $ npm install .
 ```
 
+### Customize
+```
+# Copy example.env to .env 
+# Edit .env to have desired local values
+```
+
 ### Run
 ```
 $ node ./index.js
 ```
+
+### Run using script
+```
+$ bash ./run-api.sh
+```
+
